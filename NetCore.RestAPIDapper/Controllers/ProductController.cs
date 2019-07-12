@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using NetCore.RestAPIDapper.Dtos;
+using NetCore.RestAPIDapper.Filters;
 using NetCore.RestAPIDapper.Models;
 using System.Collections.Generic;
 using System.Data;
@@ -73,9 +74,12 @@ namespace NetCore.RestAPIDapper.Controllers
         }
         // POST: api/Product
         [HttpPost]
-        public async Task<int> Post([FromBody] Product product)
+        [ValidateModel]
+        public async Task<IActionResult> Post([FromBody] Product product)
         {
-            int newId = 0;
+            //Dung filter de kiem tra
+            //if (!ModelState.IsValid)
+            //    return BadRequest(ModelState);
             using (var conn = new SqlConnection(_sqlConnectionString))
             {
                 if (conn.State == System.Data.ConnectionState.Closed) { conn.Open(); }
@@ -87,16 +91,19 @@ namespace NetCore.RestAPIDapper.Controllers
                 parameters.Add("@id", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 var result = await conn.ExecuteAsync("Create_Product", parameters, null, null, CommandType.StoredProcedure);
-                newId = parameters.Get<int>("@id");
+                int newId = parameters.Get<int>("@id");
+                return Ok(newId);
             }
-            return newId;
+            
         }
 
         // PUT: api/Product/5
         //update
         [HttpPut("{id}")]
-        public async Task Put(int id, [FromBody] Product product)
+        public async Task<IActionResult> Put(int id, [FromBody] Product product)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             using (var conn = new SqlConnection(_sqlConnectionString))
             {
                 if (conn.State == System.Data.ConnectionState.Closed) { conn.Open(); }
@@ -107,7 +114,8 @@ namespace NetCore.RestAPIDapper.Controllers
                 parameters.Add("@isActive", product.IsActive);
                 parameters.Add("@imageUrl", product.ImageUrl);
 
-                var result = await conn.ExecuteAsync("Update_Product", parameters, null, null, CommandType.StoredProcedure);
+                await conn.ExecuteAsync("Update_Product", parameters, null, null, CommandType.StoredProcedure);
+                return Ok();
             }
         }
 

@@ -12,6 +12,7 @@ namespace NetCore.RestAPIDapper.Models
     {
         [Key]
         public int Id { get; set; }
+        [Required]
         public string Sku { get; set; }
         public float Price { get; set; }
         public float? DiscountPrice { get; set; }
