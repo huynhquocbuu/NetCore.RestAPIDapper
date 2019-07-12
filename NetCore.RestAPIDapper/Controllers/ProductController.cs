@@ -1,9 +1,11 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NetCore.RestAPIDapper.Dtos;
 using NetCore.RestAPIDapper.Filters;
 using NetCore.RestAPIDapper.Models;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -17,16 +19,19 @@ namespace NetCore.RestAPIDapper.Controllers
     public class ProductController : ControllerBase
     {
         private readonly string _sqlConnectionString;
+        private ILogger<ProductController> _logger;
 
-        public ProductController(IConfiguration configuration)
+        public ProductController(IConfiguration configuration, ILogger<ProductController> logger)
         {
             _sqlConnectionString = configuration.GetConnectionString("SqlConnectionString");
+            _logger = logger;
         }
 
         // GET: api/Product
         [HttpGet]
         public async Task<IEnumerable<Product>> Get()
         {
+            //throw new Exception("test");
             using (var conn = new SqlConnection(_sqlConnectionString))
             {
                 if (conn.State == System.Data.ConnectionState.Closed) { conn.Open(); }
